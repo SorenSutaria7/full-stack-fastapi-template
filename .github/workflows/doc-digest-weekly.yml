@@ -1,0 +1,51 @@
+name: Weekly Doc Drift Digest
+
+on:
+  schedule:
+    - cron: '0 14 * * 1'  # Monday 9am ET (14:00 UTC)
+  workflow_dispatch:  # Manual trigger for testing
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+
+jobs:
+  weekly-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd scripts
+          npm install
+
+      - name: Run weekly digest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_OWNER: SorenSutaria7
+          REPO_NAME: full-stack-fastapi-template
+          DIGEST_OUTPUT_FILE: /tmp/digest-output.json
+        run: npx ts-node scripts/weekly-digest.ts
+
+      - name: Post job summary
+        if: always()
+        run: |
+          if [ -f /tmp/digest-output.json ]; then
+            echo "## Weekly Doc Drift Digest" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            node -e "
+              const data = require('/tmp/digest-output.json');
+              console.log(data.github_summary);
+            " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No digest output found." >> $GITHUB_STEP_SUMMARY
+          fi
