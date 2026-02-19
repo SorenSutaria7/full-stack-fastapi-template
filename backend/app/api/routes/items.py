@@ -12,7 +12,8 @@ router = APIRouter(prefix="/items", tags=["items"])
 
 @router.get("/", response_model=ItemsPublic)
 def read_items(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100,
+    search: str | None = None
 ) -> Any:
     """
     Retrieve items.
@@ -110,3 +111,21 @@ def delete_item(
     session.delete(item)
     session.commit()
     return Message(message="Item deleted successfully")
+
+
+@router.delete("/bulk", response_model=Message)
+def bulk_delete_items(
+    session: SessionDep,
+    current_user: CurrentUser,
+    item_ids: list[uuid.UUID],
+) -> Any:
+    """Bulk delete items by IDs. Only the owner or a superuser can delete."""
+    for item_id in item_ids:
+        item = session.get(Item, item_id)
+        if not item:
+            raise HTTPException(status_code=404, detail=f"Item {item_id} not found")
+        if not current_user.is_superuser and (item.owner_id != current_user.id):
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+        session.delete(item)
+    session.commit()
+    return Message(message=f"Successfully deleted {len(item_ids)} items")
