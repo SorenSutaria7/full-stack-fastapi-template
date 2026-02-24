@@ -1,11 +1,23 @@
 import uuid
+from enum import Enum
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
+
+
+class SortByField(str, Enum):
+    created_at = "created_at"
+    title = "title"
+
+
+SORT_COLUMN_MAP = {
+    SortByField.created_at: Item.created_at,
+    SortByField.title: Item.title,
+}
 
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -13,17 +25,20 @@ router = APIRouter(prefix="/items", tags=["items"])
 @router.get("/", response_model=ItemsPublic)
 def read_items(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100,
-    search: str | None = None, sort_by: str = "created_at"
+    search: str | None = None,
+    sort_by: SortByField = Query(default=SortByField.created_at),
 ) -> Any:
     """
     Retrieve items.
     """
+    sort_column = SORT_COLUMN_MAP[sort_by]
+    order_clause = col(sort_column).desc() if sort_by == SortByField.created_at else col(sort_column).asc()
 
     if current_user.is_superuser:
         count_statement = select(func.count()).select_from(Item)
         count = session.exec(count_statement).one()
         statement = (
-            select(Item).order_by(col(Item.created_at).desc()).offset(skip).limit(limit)
+            select(Item).order_by(order_clause).offset(skip).limit(limit)
         )
         items = session.exec(statement).all()
     else:
@@ -36,7 +51,7 @@ def read_items(
         statement = (
             select(Item)
             .where(Item.owner_id == current_user.id)
-            .order_by(col(Item.created_at).desc())
+            .order_by(order_clause)
             .offset(skip)
             .limit(limit)
         )
