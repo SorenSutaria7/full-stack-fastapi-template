@@ -1,0 +1,39 @@
+name: Doc Drift Detector
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/app/api/routes/**'
+      - 'backend/app/api/main.py'
+      - 'backend/app/api/deps.py'
+      - 'backend/app/models.py'
+      - 'backend/app/crud.py'
+      - 'backend/app/core/security.py'
+      - 'backend/app/core/config.py'
+
+jobs:
+  detect-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd scripts
+          npm init -y
+          npm install @octokit/rest typescript ts-node @types/node
+
+      - name: Run drift detection
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_OWNER: SorenSutaria7
+          REPO_NAME: full-stack-fastapi-template
+        run: npx ts-node scripts/detect-drift.ts
