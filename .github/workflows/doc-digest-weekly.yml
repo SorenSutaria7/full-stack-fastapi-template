@@ -34,7 +34,7 @@ jobs:
           REPO_OWNER: SorenSutaria7
           REPO_NAME: full-stack-fastapi-template
           DIGEST_OUTPUT_FILE: /tmp/digest-output.json
-        run: npx ts-node scripts/weekly-digest.ts
+        run: npx ts-node --project scripts/tsconfig.json scripts/weekly-digest.ts
 
       - name: Post job summary
         if: always()
