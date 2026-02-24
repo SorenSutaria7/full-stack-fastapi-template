@@ -115,7 +115,9 @@ export type ValidationError = {
 
 export type ItemsReadItemsData = {
     limit?: number;
+    search?: (string | null);
     skip?: number;
+    sortBy?: 'created_at' | 'title';
 };
 
 export type ItemsReadItemsResponse = (ItemsPublic);
@@ -144,6 +146,12 @@ export type ItemsDeleteItemData = {
 };
 
 export type ItemsDeleteItemResponse = (Message);
+
+export type ItemsBulkDeleteItemsData = {
+    requestBody: Array<(string)>;
+};
+
+export type ItemsBulkDeleteItemsResponse = (Message);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;
@@ -238,3 +246,25 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+export type WebhooksReadWebhooksResponse = (unknown);
+
+export type WebhooksCreateWebhookResponse = (unknown);
+
+export type WebhooksReadWebhookData = {
+    id: string;
+};
+
+export type WebhooksReadWebhookResponse = (unknown);
+
+export type WebhooksUpdateWebhookData = {
+    id: string;
+};
+
+export type WebhooksUpdateWebhookResponse = (unknown);
+
+export type WebhooksDeleteWebhookData = {
+    id: string;
+};
+
+export type WebhooksDeleteWebhookResponse = (Message);

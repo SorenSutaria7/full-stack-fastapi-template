@@ -19,7 +19,10 @@ router = APIRouter(prefix="/items", tags=["items"])
 
 @router.get("/", response_model=ItemsPublic)
 def read_items(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100,
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100,
     search: str | None = None,
     sort_by: SortByField = Query(default="created_at"),
 ) -> Any:
@@ -28,17 +31,13 @@ def read_items(
     """
     sort_column = SORT_COLUMN_MAP[sort_by]
     order_clause = (
-        col(sort_column).desc()
-        if sort_by == "created_at"
-        else col(sort_column).asc()
+        col(sort_column).desc() if sort_by == "created_at" else col(sort_column).asc()
     )
 
     if current_user.is_superuser:
         count_statement = select(func.count()).select_from(Item)
         count = session.exec(count_statement).one()
-        statement = (
-            select(Item).order_by(order_clause).offset(skip).limit(limit)
-        )
+        statement = select(Item).order_by(order_clause).offset(skip).limit(limit)
         items = session.exec(statement).all()
     else:
         count_statement = (

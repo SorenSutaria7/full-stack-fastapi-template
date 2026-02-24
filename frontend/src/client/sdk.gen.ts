@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, ItemsBulkDeleteItemsData, ItemsBulkDeleteItemsResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, WebhooksReadWebhooksResponse, WebhooksCreateWebhookResponse, WebhooksReadWebhookData, WebhooksReadWebhookResponse, WebhooksUpdateWebhookData, WebhooksUpdateWebhookResponse, WebhooksDeleteWebhookData, WebhooksDeleteWebhookResponse } from './types.gen';
 
 export class ItemsService {
     /**
@@ -12,6 +12,8 @@ export class ItemsService {
      * @param data The data for the request.
      * @param data.skip
      * @param data.limit
+     * @param data.search
+     * @param data.sortBy
      * @returns ItemsPublic Successful Response
      * @throws ApiError
      */
@@ -21,7 +23,9 @@ export class ItemsService {
             url: '/api/v1/items/',
             query: {
                 skip: data.skip,
-                limit: data.limit
+                limit: data.limit,
+                search: data.search,
+                sort_by: data.sortBy
             },
             errors: {
                 422: 'Validation Error'
@@ -114,12 +118,33 @@ export class ItemsService {
             }
         });
     }
+    
+    /**
+     * Bulk Delete Items
+     * Bulk delete items by IDs. Only the owner or a superuser can delete.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static bulkDeleteItems(data: ItemsBulkDeleteItemsData): CancelablePromise<ItemsBulkDeleteItemsResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/items/bulk',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
 }
 
 export class LoginService {
     /**
      * Login Access Token
-     * OAuth2 compatible token login, get an access token for future requests
+     * OAuth2 compatible token login, get an access token for future requests.
+     * Rate limited to 5 attempts per minute per IP.
      * @param data The data for the request.
      * @param data.formData
      * @returns Token Successful Response
@@ -463,6 +488,97 @@ export class UtilsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/utils/health-check/'
+        });
+    }
+}
+
+export class WebhooksService {
+    /**
+     * Read Webhooks
+     * Retrieve webhooks.
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static readWebhooks(): CancelablePromise<WebhooksReadWebhooksResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/webhooks/'
+        });
+    }
+    
+    /**
+     * Create Webhook
+     * Create new webhook.
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static createWebhook(): CancelablePromise<WebhooksCreateWebhookResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/webhooks/'
+        });
+    }
+    
+    /**
+     * Read Webhook
+     * Get webhook by ID.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static readWebhook(data: WebhooksReadWebhookData): CancelablePromise<WebhooksReadWebhookResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/webhooks/{id}',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Webhook
+     * Update a webhook.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static updateWebhook(data: WebhooksUpdateWebhookData): CancelablePromise<WebhooksUpdateWebhookResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/webhooks/{id}',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Webhook
+     * Delete a webhook.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteWebhook(data: WebhooksDeleteWebhookData): CancelablePromise<WebhooksDeleteWebhookResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/webhooks/{id}',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
         });
     }
 }
