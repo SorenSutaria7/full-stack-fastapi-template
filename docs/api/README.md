@@ -218,6 +218,8 @@ Retrieve items (paginated). Superusers see all items; regular users see only the
   - `skip` (int, default: 0)
   - `limit` (int, default: 100)
   - `search` (string, optional) — Filter items by search term
+  - `sort_by` (string, default: `"created_at"`) — Field to sort results by
+  - `tags` (string, optional) — Filter items by tags
 - **Response:** `ItemsPublic`
   - `data` (list of `ItemPublic`)
   - `count` (int)
