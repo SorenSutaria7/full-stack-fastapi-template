@@ -1,6 +1,5 @@
 import uuid
-from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import col, func, select
@@ -8,15 +7,11 @@ from sqlmodel import col, func, select
 from app.api.deps import CurrentUser, SessionDep
 from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
 
+SortByField = Literal["created_at", "title"]
 
-class SortByField(str, Enum):
-    created_at = "created_at"
-    title = "title"
-
-
-SORT_COLUMN_MAP = {
-    SortByField.created_at: Item.created_at,
-    SortByField.title: Item.title,
+SORT_COLUMN_MAP: dict[str, Any] = {
+    "created_at": Item.created_at,
+    "title": Item.title,
 }
 
 router = APIRouter(prefix="/items", tags=["items"])
@@ -26,13 +21,17 @@ router = APIRouter(prefix="/items", tags=["items"])
 def read_items(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100,
     search: str | None = None,
-    sort_by: SortByField = Query(default=SortByField.created_at),
+    sort_by: SortByField = Query(default="created_at"),
 ) -> Any:
     """
     Retrieve items.
     """
     sort_column = SORT_COLUMN_MAP[sort_by]
-    order_clause = col(sort_column).desc() if sort_by == SortByField.created_at else col(sort_column).asc()
+    order_clause = (
+        col(sort_column).desc()
+        if sort_by == "created_at"
+        else col(sort_column).asc()
+    )
 
     if current_user.is_superuser:
         count_statement = select(func.count()).select_from(Item)
