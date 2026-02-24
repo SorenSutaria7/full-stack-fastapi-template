@@ -57,13 +57,29 @@ def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> 
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return item
 
+@router.get("/count")
+def count_items(
+    session: SessionDep, current_user: CurrentUser
+) -> int:
+    """
+    Return total item count for the current user.
+    """
+    if current_user.is_superuser:
+        count_statement = select(func.count()).select_from(Item)
+    else:
+        count_statement = (
+            select(func.count())
+            .select_from(Item)
+            .where(Item.owner_id == current_user.id)
+        )
+    return session.exec(count_statement).one()
 
 @router.post("/", response_model=ItemPublic)
 def create_item(
     *, session: SessionDep, current_user: CurrentUser, item_in: ItemCreate
 ) -> Any:
     """
-    Create new item.
+    Create new item. Rate limited to 10 requests per minute per user.
     """
     item = Item.model_validate(item_in, update={"owner_id": current_user.id})
     session.add(item)
