@@ -234,9 +234,17 @@ Get an item by ID.
   - `403` — Not enough permissions
   - `404` — Item not found
 
+### GET /items/count
+
+Return total item count for the current user. Superusers get a count of all items; regular users get a count of only their own items.
+
+- **Auth:** Bearer token required
+- **Response:** `int`
+
 ### POST /items/
 
-Create a new item.
+<!-- REVIEW NEEDED: Docstring claims "Rate limited to 10 requests per minute per user" but no rate-limiting middleware or decorator is visible in the code. Verify if this is enforced externally (e.g., API gateway, middleware) or aspirational. -->
+Create a new item. Rate limited to 10 requests per minute per user.
 
 - **Auth:** Bearer token required
 - **Request Body:** `ItemCreate`
