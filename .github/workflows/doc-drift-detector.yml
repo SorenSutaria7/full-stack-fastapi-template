@@ -2,7 +2,7 @@ name: Doc Drift Detector
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - 'backend/app/api/routes/**'
       - 'backend/app/api/main.py'
