@@ -27,8 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd scripts
-          npm init -y
-          npm install @octokit/rest typescript ts-node @types/node
+          npm install
 
       - name: Run drift detection
         env:
@@ -36,4 +35,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_OWNER: SorenSutaria7
           REPO_NAME: full-stack-fastapi-template
-        run: npx ts-node scripts/detect-drift.ts
+        run: npx ts-node --project scripts/tsconfig.json scripts/detect-drift.ts
